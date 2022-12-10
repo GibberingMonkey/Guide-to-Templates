@@ -1,4 +1,4 @@
-#Class Templates
+# Class Templates
 
 Class templates are declared as normal structs, classes, and unions, except that there is a template delcaration in front of it:
 
