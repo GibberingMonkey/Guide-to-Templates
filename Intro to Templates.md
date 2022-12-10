@@ -105,7 +105,7 @@ Basically, if the conversion can happen at compile time and (if the conversion i
 
 &nbsp;
 
-```c+++
+```c++
 template<template<typename, typename> class T>
 void exampleFunc4();
 ```
