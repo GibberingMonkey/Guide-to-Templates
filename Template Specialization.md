@@ -1,4 +1,4 @@
-#Explicit Template Specialization
+# Explicit Template Specialization
 
 Suppose you have a struct template like this:
 
