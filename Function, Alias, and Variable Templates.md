@@ -1,4 +1,4 @@
-#Function Templates
+# Function Templates
 
 As mentioned in the intro to templates section, a function template can be defined like so:
 
