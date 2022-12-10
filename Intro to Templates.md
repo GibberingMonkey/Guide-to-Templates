@@ -191,6 +191,3 @@ extern template void exampleFunc1(double, std::string);
 ```
 
 You're telling the compiler that there is another file that instantiates the template with these parameters, and it should use the instantition from that other file instead of generating new code for this cpp file. This effectivly eliminates the potentional code bloat from defining everything in the header, which essentially gets rid of all the downsides of doing that. You should only use the extern keyword if you instantiate the template with same parameters in another file.
-
-#Summary
-A template describes a family of classes, functions, variables, or type aliases. Instead of being a class, function, etc., it tells the compiler how to generate those given certain parameters.
