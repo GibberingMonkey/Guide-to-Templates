@@ -18,3 +18,4 @@ Currently, the sections should be read in this order:
 2. Function, Alias, and Variable Templates
 3. Class Templates and Dependent Names
 4. Template Specialization
+5. Parameter Packs
