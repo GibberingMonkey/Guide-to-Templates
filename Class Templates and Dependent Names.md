@@ -79,7 +79,7 @@ Nested classes (A class defined within another class) can be templates as well. 
 
 &nbsp;
 
-#Inheritance and Dependent Names
+# Inheritance and Dependent Names
 
 
 ```c++
