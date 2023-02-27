@@ -19,3 +19,4 @@ Currently, the sections should be read in this order:
 3. Class Templates and Dependent Names
 4. Template Specialization
 5. Parameter Packs
+6. Forwarding
