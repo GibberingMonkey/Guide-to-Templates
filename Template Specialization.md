@@ -1,4 +1,4 @@
-# Explicit Template Specialization
+#Explicit Template Specialization
 
 Suppose you have a struct template like this:
 
@@ -236,3 +236,60 @@ F<char>::A<int*> object_2;
 //Uses the primary template of A
 F<double>::A<int> object_3;
 ```
+
+#Specializing Member Functions
+As mentioned previously, you can't explicitly specialize a member template within a class template. However, there are some ways to get around that, each with their own drawbacks. For member functions, a simple way to do this is to use `if constexpr` and things like `std::same_as_v`. `if constexpr` is the same as a regular if statement, except that the boolean it accepts is evaluated at compile time. `std::same_as_v` is a boolean variable template that can be defined like this:
+
+```c++
+template<typename T1, typename T2>
+struct is_same{static constexpr bool value = false;};
+
+template<typename T>
+struct is_same<T, T>{static constexpr bool value = true;};
+
+template<typename T1, typename T2>
+constexpr bool is_same_v = is_same<T1, T2>::value;
+```
+In essence, it takes in two types as template parameters. If they are the same, it evaluates to true. If they aren't, it evaluates to false. So using these two, we can write what is functionally a specialization of the function like so:
+
+```c++
+template<typename T>
+struct G{
+    template<typename T1>
+    void func(T1 val){
+        if constexpr(std::is_same_v<T1, int>){
+            std::cout << "\"Specialization\" for int called\n";
+        }else if constexpr(is_same_v<T1, float>){
+            std::cout << "\"Specialization\" for float called\n";
+        }else{
+            std::cout << "\"Base\" template called\n";
+        }
+    };
+};
+```
+To "specialize" for template template parameters, you'd need to write an is\_same\_v that works with template template parameters, and for non-type parameters you can just use a constexpr == operator.
+
+
+The obvious problem with this method is that if you have a lot of specializations, your function becomes very bloated and is harder to read. To solve this issue, you can just have your member function call a non-member function template, and just specialize that, like so:
+
+```c++
+template<typename T>
+void dummyFunc(T val){
+    std::cout << "Base template called\n";
+}
+template<>
+void dummyFunc<int>(int val){
+    std::cout << "Specialization for int called\n";
+}
+template<>
+void dummyFunc<float>(float val){
+    std::cout << "Specialization for float called\n";  
+}
+
+template<typename T>
+struct H{
+    template<typename T1>
+    void func(T1 val){dummyFunc(val);}
+};
+```
+The only issue with this is that now your member function is implemented in something unrelated to the class, which makes what it does a bit less clear. To get around this, you can effectively explicitly specialize member function templates using function overloading, but this will be discussed in the SFINAE section.

@@ -26,7 +26,7 @@ struct A{
 };
 
 //If you instantiated the class like this:
-//A a_object{"Hello"};  //<- this normally line compiles, but will cause a build error because of subsequent code if left uncommented.
+//A a_object{"Hello"};  //<- this line normally compiles, but will cause a build error because of subsequent code if left uncommented.
 
 //Then var would be a const char*.
 //This might be undesirable to you: string literals are typically not the easiest thing to work with, at least compared to std::string.
@@ -63,6 +63,7 @@ struct A<int>{
 
 //Explicit specializations can be used with any kind of template except for alias templates.
 //However, member templates cannot be specialized unless the enclosing class is specialized.
+//There are a few ways to get around this, discussed at the end of the section.
 
 //template<typename T>
 //template<>
@@ -110,7 +111,7 @@ void exampleFunc1(double var){std::cout << "Specialization for doubles called\n"
 
 //There are a few reasons for this to be forbidden.
 //First of all, specializations inherit the default arguments of the base templates.
-//Therefore, giving the specialization a default argument is technically redefining it, which is not allowed.
+//Therefore, giving the specialization a default argument is technically redefining the default, which is not allowed.
 //Furthermore, whenever you call a templated function, it figures out which template to use by looking at the base template.
 //Therefore, if you leave out an argument required by the primary template it wouldn't be able to resolve the function call
 //unless the name lookup rules were changed.
@@ -270,6 +271,82 @@ F<char>::A<int*> object_2; //Uses full specialization of the primary template (s
 F<double>::A<int> object_3; //Uses the primary template of A
 
 
+//--------------------------------------------------
+//SPECIALIZING MEMBER TEMPLATES
+//--------------------------------------------------
+
+//As mentioned previously, you can't explicitly specialize a member template without also explicitly specializing the base template.
+//However, there are ways to get around this, each with its own drawbacks.
+//The simplest way would be to use if constexpr and std::is_same_v.
+//if constexpr works just like a regular if statement, except the boolean is known at compile time.
+//Then, it only compiles the code that it would normally run. That is, if the inputted boolean was false
+//it wouldn't compile it, so it would essentially act as though it wasn't there.
+//std::is_same_v is an variable template that takes in two types, defined like so:
+
+template<typename T1, typename T2>
+struct is_same{static constexpr bool value = false;};
+
+template<typename T>
+struct is_same<T, T>{static constexpr bool value = true;};
+
+template<typename T1, typename T2>
+constexpr bool is_same_v = is_same<T1, T2>::value;
+
+//In essence, if the two types are the same, it will evaluate to true. Otherwise, it evaluates to false.
+//So, we could now write a function template within a class template like this:
+
+template<typename T>
+struct G{
+    template<typename T1>
+    void func(T1 val){
+        if constexpr(std::is_same_v<T1, int>){
+            std::cout << "\"Specialization\" for int called\n";
+        }else if constexpr(is_same_v<T1, float>){
+            std::cout << "\"Specialization\" for float called\n";
+        }else{
+            std::cout << "\"Base\" template called\n";
+        }
+    };
+};
+
+//For any G object, func should essentially be "specialized" so that it will
+//behave differently if you call it with an int, float, or any other variable,
+//essentially how like a specialized function would act.
+//The main problem with this method is that if you have a lot of specializations, it can add a lot of bloat
+//to your function definition.
+
+
+
+//An alternative method is to essentially make your member function a dummy.
+//More specifically, make it call another function template outside the class that can be specialized:
+template<typename T>
+void dummyFunc(T val){
+    std::cout << "Base template called\n";
+}
+template<>
+void dummyFunc<int>(int val){
+    std::cout << "Specialization for int called\n";
+}
+template<>
+void dummyFunc<float>(float val){
+    std::cout << "Specialization for float called\n";
+    
+}
+
+template<typename T>
+struct H{
+    template<typename T1>
+    void func(T1 val){dummyFunc(val);}
+};
+
+//Additional methods to explicitly specialize members will be discussed in the SFINAE section.
+
 int main(){
+    
+    
+    
+    H<size_t> obj;
+    obj.func(5);
+    
     return 0;
 }
